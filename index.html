@@ -29,8 +29,24 @@
     font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
     background:var(--bg);
     color:var(--ink);
+  }
+  #heroBanner{
+    width:100%;
+    line-height:0;
+    overflow:hidden;
+    background:#0f0c0a;
+  }
+  #heroBanner img{
+    width:100%;
+    height:auto;
+    max-height:340px;
+    object-fit:cover;
+    object-position:center 30%;
+    display:block;
+  }
+  #appLayout{
     display:flex;
-    min-height:100vh;
+    min-height:calc(100vh - 0px);
   }
   /* Sidebar */
   #sidebar{
@@ -279,14 +295,20 @@
     margin-top:30px;
   }
   @media (max-width:800px){
-    body{ flex-direction:column; }
+    #appLayout{ flex-direction:column; }
     #sidebar{ width:100%; height:auto; position:relative; }
     #main{ padding:24px; }
+    #heroBanner img{ max-height:200px; }
   }
 </style>
 </head>
 <body>
 
+<div id="heroBanner">
+  <img src="banner.webp" alt="提問課・THE POWER OF QUESTIONS・工作優化指南">
+</div>
+
+<div id="appLayout">
 <div id="sidebar">
   <div class="brand-kicker">KIM・阿金！人生進化中</div>
   <h1>提問課</h1>
@@ -303,6 +325,7 @@
 </div>
 
 <div id="main"></div>
+</div>
 
 <script>
 /* ===================== 內容資料 ===================== */
