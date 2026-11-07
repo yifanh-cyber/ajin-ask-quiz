@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阿金提問力｜互動式系統練習</title>
+<style>
+  :root{
+    --bg:#f0f3f5;
+    --card:#ffffff;
+    --ink:#1d1d1d;
+    --sub:#5c6773;
+    --accent:#2f54eb;
+    --accent-dark:#1939b7;
+    --accent-bg:#eef1fd;
+    --good:#2e7d4f;
+    --good-bg:#e7f5ec;
+    --bad:#c0392b;
+    --bad-bg:#fdecea;
+    --line:#e2e6ea;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    display:flex;
+    min-height:100vh;
+  }
+  /* Sidebar */
+  #sidebar{
+    width:230px;
+    flex-shrink:0;
+    background:#ffffff;
+    color:var(--ink);
+    padding:24px 16px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    border-right:1px solid var(--line);
+  }
+  #sidebar h1{
+    font-size:17px;
+    line-height:1.5;
+    margin:0 0 4px;
+    color:var(--accent);
+    font-weight:800;
+  }
+  #sidebar .tagline{
+    font-size:12px;
+    color:var(--sub);
+    margin-bottom:24px;
+  }
+  .nav-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 12px;
+    border-radius:8px;
+    margin-bottom:6px;
+    cursor:pointer;
+    font-size:13.5px;
+    color:#3c4450;
+    transition:background .15s;
+  }
+  .nav-item:hover{ background:var(--accent-bg); }
+  .nav-item.active{ background:var(--accent); color:#fff; font-weight:600; }
+  .nav-item .score-pill{
+    font-size:11px;
+    background:#eef1f5;
+    color:#5c6773;
+    padding:2px 7px;
+    border-radius:20px;
+  }
+  .nav-item.active .score-pill{ background:rgba(255,255,255,.25); color:#fff; }
+  #overall{
+    margin-top:20px;
+    padding:14px;
+    background:var(--accent-bg);
+    border-radius:10px;
+    font-size:12.5px;
+    color:#3c4450;
+  }
+  #overall .num{
+    font-size:22px;
+    color:var(--accent);
+    font-weight:700;
+  }
+  #resetAllBtn{
+    margin-top:14px;
+    width:100%;
+    padding:8px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--sub);
+    border-radius:8px;
+    font-size:12px;
+    cursor:pointer;
+  }
+  #resetAllBtn:hover{ border-color:var(--accent); color:var(--accent); }
+
+  /* Main */
+  #main{
+    flex:1;
+    padding:40px 48px 80px;
+    max-width:880px;
+  }
+  .chapter-header{
+    margin-bottom:28px;
+    padding-bottom:18px;
+    border-bottom:2px solid var(--line);
+  }
+  .chapter-eyebrow{
+    color:var(--accent);
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:1px;
+    margin-bottom:6px;
+  }
+  .chapter-header h2{
+    margin:0 0 10px;
+    font-size:26px;
+  }
+  .chapter-header p{
+    margin:0;
+    color:var(--sub);
+    font-size:14.5px;
+    line-height:1.7;
+  }
+  .concept-box{
+    background:var(--accent-bg);
+    border:1px solid #d7e0fa;
+    border-radius:10px;
+    padding:16px 20px;
+    margin-bottom:28px;
+    font-size:13.5px;
+    line-height:1.9;
+    color:#374151;
+  }
+  .concept-box b{ color:var(--accent-dark); }
+  .concept-box table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px;}
+  .concept-box td, .concept-box th{ border:1px solid #d7e0fa; padding:6px 8px; text-align:left; }
+  .concept-box th{ background:#dfe6fb; }
+
+  .qcard{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:22px 24px;
+    margin-bottom:18px;
+    box-shadow:0 1px 3px rgba(16,24,40,.05);
+  }
+  .qmeta{
+    font-size:11.5px;
+    color:var(--accent);
+    font-weight:700;
+    letter-spacing:.5px;
+    margin-bottom:8px;
+    text-transform:uppercase;
+  }
+  .qtext{
+    font-size:15.5px;
+    font-weight:600;
+    margin-bottom:14px;
+    line-height:1.6;
+  }
+  .options{ display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .option{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+    transition:background .12s, border-color .12s;
+  }
+  .option:hover{ background:var(--accent-bg); }
+  .option input{ margin-top:3px; }
+  .option.correct{ background:var(--good-bg); border-color:var(--good); }
+  .option.wrong{ background:var(--bad-bg); border-color:var(--bad); }
+  .option.disabled{ cursor:default; }
+
+  .btn{
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    padding:9px 18px;
+    border-radius:8px;
+    font-size:13.5px;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .btn:hover{ background:var(--accent-dark); }
+  .btn.secondary{
+    background:transparent;
+    color:var(--accent-dark);
+    border:1px solid var(--accent);
+  }
+  .btn.secondary:hover{ background:var(--accent-bg); }
+  .btn:disabled{ background:#c7d0e8; cursor:default; }
+
+  .feedback{
+    margin-top:12px;
+    padding:12px 14px;
+    border-radius:8px;
+    font-size:13.5px;
+    line-height:1.7;
+    display:none;
+  }
+  .feedback.show{ display:block; }
+  .feedback.good{ background:var(--good-bg); color:#1f5c3a; border:1px solid #bfe3cd; }
+  .feedback.bad{ background:var(--bad-bg); color:#8f2c20; border:1px solid #f1c3bc; }
+
+  textarea{
+    width:100%;
+    min-height:90px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:14px;
+    font-family:inherit;
+    resize:vertical;
+    margin-bottom:12px;
+  }
+  .ref-answer{
+    margin-top:10px;
+    padding:12px 14px;
+    background:var(--accent-bg);
+    border-left:3px solid var(--accent);
+    border-radius:4px;
+    font-size:13.5px;
+    line-height:1.8;
+    display:none;
+  }
+  .ref-answer.show{ display:block; }
+  .row-actions{ display:flex; gap:10px; align-items:center; }
+
+  .chapter-nav-footer{
+    display:flex;
+    justify-content:space-between;
+    margin-top:30px;
+  }
+  @media (max-width:800px){
+    body{ flex-direction:column; }
+    #sidebar{ width:100%; height:auto; position:relative; }
+    #main{ padding:24px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h1>阿金提問力</h1>
+  <div class="tagline">系統練習手冊・互動版</div>
+  <div id="navList"></div>
+  <div id="overall">
+    <div>目前總得分</div>
+    <div class="num" id="overallScore">0 / 0</div>
+  </div>
+  <button id="resetAllBtn">重設全部作答紀錄</button>
+</div>
+
+<div id="main"></div>
+
+<script>
+/* ===================== 內容資料 ===================== */
+const chapters = [
+  {
+    key: "ch0",
+    title: "核心心法",
+    eyebrow: "START・暖身",
+    intro: "進入六個章節之前，先建立三個貫穿全場的核心框架：提問三層次、Q-A-E 三角、以及壞提問負循環。",
+    concept: `
+      <p><b>AI 時代核心命題：</b>當生產力不再是稀缺資源時，什麼變得更重要？→ <b>決策力</b>。</p>
+      <p><b>提問三層次：</b>求知 → 求解 → 求變（背後是上游思維與冰山問題）</p>
+      <table>
+        <tr><th>層次</th><th>功能</th><th>提問目的範例</th></tr>
+        <tr><td>表層</td><td>對方想解決什麼事情？</td><td>如何提高收入？</td></tr>
+        <tr><td>中層</td><td>為什麼這件事情重要？</td><td>因為我希望生活更穩定</td></tr>
+        <tr><td>深層</td><td>對方真正重視什麼？</td><td>我希望家人不再承受經濟壓力</td></tr>
+      </table>
+      <p style="margin-top:10px;"><b>Q-A-E 三角：</b>提問(Q) → 答案(A) → 行動(E)。知道答案，不代表事情會改變；核心框架的意義在於要銜接到行動。</p>
+      <p><b>壞提問負循環：</b>壞的提問(帶著預設/偏見/錯誤方向) → 失真的答案(片面或防衛性資訊) → 錯誤的判斷(把推測當事實) → 無效的行動(投入資源卻無法解決) → 問題沒解決，卻持續重複。</p>
+    `,
+    questions: [
+      {type:"mc", q:"AI 時代，當生產力不再是稀缺資源時，什麼變得更重要？",
+        options:["執行力","決策力","記憶力","社交力"], correct:1,
+        explain:"課程開場即點出核心命題：答案是「決策力」。提問的終極目的就是幫助我們做出更好的決策。"},
+      {type:"mc", q:"提問的三個層次，正確順序是？",
+        options:["求解 → 求知 → 求變","求知 → 求解 → 求變","求變 → 求知 → 求解","求知 → 求變 → 求解"], correct:1,
+        explain:"先靠提問取得資訊與理解（求知），再找出解法（求解），最後才能推動改變（求變）。"},
+      {type:"mc", q:"在「上游思維、冰山問題」中，深層提問要挖掘的是？",
+        options:["對方想解決什麼事情","為什麼這件事情重要","對方真正重視什麼","以上皆非"], correct:2,
+        explain:"表層問「想解決什麼」、中層問「為什麼重要」、深層才問到「真正重視什麼」，也就是動機的根源。"},
+      {type:"tf", q:"Q-A-E 三角中，只要得到了答案（A），事情就一定會改變。",
+        correct:false,
+        explain:"錯。課程明確強調「知道答案，不代表事情會改變」，答案必須銜接到行動（E）才有意義。"},
+      {type:"mc", q:"壞提問負循環的正確順序是？",
+        options:[
+          "壞的提問 → 錯誤的判斷 → 失真的答案 → 無效的行動",
+          "壞的提問 → 失真的答案 → 錯誤的判斷 → 無效的行動",
+          "失真的答案 → 壞的提問 → 無效的行動 → 錯誤的判斷",
+          "壞的提問 → 無效的行動 → 失真的答案 → 錯誤的判斷"
+        ], correct:1,
+        explain:"壞的提問帶來失真的答案，失真的答案導致錯誤的判斷，錯誤的判斷又導致無效的行動，然後循環回到壞的提問。"},
+      {type:"open", q:"寫下你最近工作中問過的一個「壞問題」，並指出它落入壞提問負循環的哪一個階段（提問／答案／判斷／行動）。",
+        ref:"沒有標準答案。自我檢查重點：這個問題是否帶著預設立場或指責？得到的回答是不是防衛性的片面資訊？你是否因此做出了以偏概全的判斷？最後投入的行動有沒有真正解決問題？"}
+    ]
+  },
+  {
+    key:"ch1",
+    title:"提問的力量",
+    eyebrow:"CHAPTER 1",
+    intro:"從被動轉為主動：提問如何決定我們的選擇、注意力，以及如何看見自己的認知盲點。",
+    concept:`
+      <p><b>主動的力量：</b>把陳述句改成行動導向的提問。</p>
+      <ul>
+        <li>「我沒辦法。」→「我目前能做到的最小一步是什麼？」</li>
+        <li>「這件事太難了。」→「如果把這件事拆成十個步驟，第一步是什麼？」</li>
+        <li>「現在環境就是不好。」→「在無法改變環境的情況下，我還能控制什麼？」</li>
+      </ul>
+      <p><b>周哈里窗（認知的力量）：</b></p>
+      <table>
+        <tr><th>象限</th><th>定義</th></tr>
+        <tr><td>開放</td><td>對方知道，自己也知道</td></tr>
+        <tr><td>盲目</td><td>對方知道，自己不知道</td></tr>
+        <tr><td>隱藏</td><td>對方不知道，自己知道</td></tr>
+        <tr><td>未知</td><td>對方不知道，自己也不知道</td></tr>
+      </table>
+    `,
+    questions:[
+      {type:"mc", q:"周哈里窗中，「對方知道，自己不知道」屬於哪一區？",
+        options:["開放","盲目","隱藏","未知"], correct:1,
+        explain:"這就是「盲目」區——別人看得到、自己卻沒意識到的部分，往往要靠別人的提問才能被看見。"},
+      {type:"mc", q:"「我沒辦法。」若用主動式提問改寫，較合適的是？",
+        options:["誰該為這件事負責？","我目前能做到的最小一步是什麼？","這件事有多難？","為什麼會這樣？"], correct:1,
+        explain:"主動的力量強調「讓人從被動轉向主動」，重點是把注意力導向下一步可以做的行動。"},
+      {type:"tf", q:"「決策的力量」強調的是：提問決定我們如何選擇。",
+        correct:true,
+        explain:"對。課程原文第一點就是「提問決定我們如何選擇」。"},
+      {type:"mc", q:"一家企業面臨現金流不足，一般問題是「我們要怎麼增加收入？」。下列哪一句最能引導更深層的思考？",
+        options:["我們還有多少現金可以使用？","誰該為現金不足負責？","為什麼業績不好？","要不要關掉公司？"], correct:0,
+        explain:"課程範例列出多個更值得思考的問題（現金水位、延後支出、找出高效現金流客群、惡化風險等），這一題聚焦盤點現有資源，是典型的深層提問起點。"},
+      {type:"open", q:"想一句你自己常說的「限制性陳述句」（例如「現在環境就是不好」），把它改寫成一個行動導向的提問。",
+        ref:"自我檢查：改寫後的句子是否把焦點從「抱怨現況」轉向「我能控制 / 能做的下一步」？是否具體到可以馬上行動？"}
+    ]
+  },
+  {
+    key:"ch2",
+    title:"好提問與壞提問",
+    eyebrow:"CHAPTER 2",
+    intro:"有些問題幫助思考，有些問題反而限制思考。認識提問的六大核心作用，以及壞提問帶來的七種負面效果。",
+    concept:`
+      <p><b>提問的核心（六大作用）：</b></p>
+      <table>
+        <tr><th>作用</th><th>核心目的</th><th>代表問題</th></tr>
+        <tr><td>① 獲取資訊</td><td>補足不知道的事情</td><td>現在發生了什麼？</td></tr>
+        <tr><td>② 釐清認知</td><td>消除模糊、確認理解</td><td>你說的效率低，是指哪個環節？</td></tr>
+        <tr><td>③ 探索真相</td><td>尋找原因、證據與盲點</td><td>我們為什麼認為這是主要原因？</td></tr>
+        <tr><td>④ 創造可能</td><td>突破假設、產生新的選擇</td><td>如果不使用現在的方法呢？</td></tr>
+        <tr><td>⑤ 建立連結</td><td>理解他人的感受、需求與觀點</td><td>這件事對你為什麼重要？</td></tr>
+        <tr><td>⑥ 推動改變</td><td>形成決策、承諾與行動</td><td>接下來我們最應該做什麼？</td></tr>
+      </table>
+      <p style="margin-top:10px;"><b>壞提問帶來的效果：</b></p>
+      <table>
+        <tr><th>負面效果</th><th>如何發生</th><th>範例</th></tr>
+        <tr><td>① 認知偏誤</td><td>讓人只尋找支持原本想法的資訊</td><td>為什麼現在的年輕人都不負責任？</td></tr>
+        <tr><td>② 錯誤歸因</td><td>將問題歸於錯誤原因</td><td>為什麼業績不好都是業務的錯？</td></tr>
+        <tr><td>③ 情緒防衛</td><td>讓人感受到攻擊、否定與責備</td><td>這麼簡單的事，你怎麼會做錯？</td></tr>
+        <tr><td>④ 關係破壞</td><td>降低信任，讓人不願意分享資訊</td><td>你是不是根本不在乎我？</td></tr>
+        <tr><td>⑤ 限制可能</td><td>過早縮小選項，忽略其他解法</td><td>我們只能裁員還是減薪？</td></tr>
+        <tr><td>⑥ 錯誤決策</td><td>根據不完整或誤導性資訊做判斷</td><td>要增加多少廣告才能救營收？</td></tr>
+        <tr><td>⑦ 無效行動</td><td>把時間、資源投入錯誤方向</td><td>如何讓所有員工加班更久？</td></tr>
+      </table>
+    `,
+    questions:[
+      {type:"mc", q:"「你說的效率低，是指哪個環節？」主要發揮哪一種核心作用？",
+        options:["獲取資訊","釐清認知","探索真相","創造可能"], correct:1,
+        explain:"這句話在消除模糊、確認對方真正的意思，對應「釐清認知」。"},
+      {type:"mc", q:"「如果不使用現在的方法呢？」主要發揮哪一種核心作用？",
+        options:["建立連結","創造可能","推動改變","探索真相"], correct:1,
+        explain:"這句話在打破既有假設、尋找新選擇，對應「創造可能」。"},
+      {type:"mc", q:"「為什麼現在的年輕人都不負責任？」這類問句，最可能造成哪一種壞提問效果？",
+        options:["情緒防衛","認知偏誤","關係破壞","限制可能"], correct:1,
+        explain:"這類帶著預設立場的問題，會讓人只尋找支持原本想法的資訊，屬於「認知偏誤」。"},
+      {type:"mc", q:"「你是不是根本不在乎我？」這句話最可能造成？",
+        options:["錯誤決策","關係破壞","無效行動","限制可能"], correct:1,
+        explain:"這句話會降低信任、讓人不願意分享真實想法，屬於「關係破壞」。"},
+      {type:"mc", q:"「問題沒有解決，卻持續重複」是哪個循環的特徵？",
+        options:["Q-A-E 正循環","壞提問負循環","八大元素","周哈里窗"], correct:1,
+        explain:"這正是壞提問負循環最終導致的結果：提問→答案→行動也可能形成負循環。"},
+      {type:"open", q:"挑一句你或同事常說的壞問題（例如「你為什麼做事這麼不負責任？」），把它改寫成一個好問題。",
+        ref:"自我檢查：改寫後的句子是否聚焦在事實與行為，而非人格評價？是否能引發對方說出更多真實資訊，而不是讓對方進入防衛？"}
+    ]
+  },
+  {
+    key:"ch3",
+    title:"找出該問的問題",
+    eyebrow:"CHAPTER 3",
+    intro:"提問的真正能力，是知道現在應該問什麼。認識工作中六種提問類型、問題價值公式與八大元素檢查表。",
+    concept:`
+      <p><b>工作中的六種提問類型：</b></p>
+      <table>
+        <tr><th>類型</th><th>卡住的情況</th><th>核心關鍵字</th><th>代表困境</th></tr>
+        <tr><td>① 目標型</td><td>不知道目標</td><td>釐清方向</td><td>不知道要去哪裡</td></tr>
+        <tr><td>② 事實型</td><td>不知道現況</td><td>建立共同事實</td><td>不知道現在在哪裡</td></tr>
+        <tr><td>③ 原因型</td><td>不知道原因</td><td>探索原因</td><td>不理解為什麼發生</td></tr>
+        <tr><td>④ 方案型</td><td>不知道方法</td><td>創造選擇</td><td>不知道有哪些選擇</td></tr>
+        <tr><td>⑤ 決策型</td><td>不知道怎麼選</td><td>做出選擇</td><td>有很多答案，不知道選哪個</td></tr>
+        <tr><td>⑥ 驗證型</td><td>不知道是否有效</td><td>產生學習</td><td>做了事情，不知道有沒有用</td></tr>
+      </table>
+      <p style="margin-top:10px;"><b>問題價值公式：</b>問題價值 ＝ 重要性 × 確定性 × 可行動性</p>
+      <p><b>提問的八大元素：</b></p>
+      <table>
+        <tr><th>元素</th><th>核心問題</th><th>為什麼重要</th></tr>
+        <tr><td>① 目的</td><td>我為什麼要問？</td><td>決定問題的方向</td></tr>
+        <tr><td>② 對象</td><td>我正在問誰？</td><td>決定互動方式</td></tr>
+        <tr><td>③ 關係</td><td>我們之間是什麼關係？</td><td>影響信任與權力</td></tr>
+        <tr><td>④ 情境</td><td>現在發生什麼事情？</td><td>決定提問的切入點</td></tr>
+        <tr><td>⑤ 時機</td><td>現在適合問嗎？</td><td>影響回答品質</td></tr>
+        <tr><td>⑥ 情緒</td><td>對方目前處於什麼情緒？</td><td>影響防衛與開放程度</td></tr>
+        <tr><td>⑦ 信任</td><td>我應該問到多深？</td><td>決定探索程度與界線</td></tr>
+        <tr><td>⑧ 後續</td><td>得到答案後，我要做什麼？</td><td>決定提問是否產生價值</td></tr>
+      </table>
+    `,
+    questions:[
+      {type:"mc", q:"「我沒有達成目標，但我不知道我當初想完成什麼」屬於六種提問類型中的？",
+        options:["事實型","目標型","原因型","決策型"], correct:1,
+        explain:"卡在「不知道目標」正是目標型提問要解決的情況，核心關鍵字是「釐清方向」。"},
+      {type:"mc", q:"驗證型提問的核心關鍵字是？",
+        options:["創造選擇","產生學習","釐清方向","做出選擇"], correct:1,
+        explain:"驗證型處理「做了事情，不知道有沒有用」，核心是從結果中「產生學習」。"},
+      {type:"mc", q:"「哪些地方符合或不符合預期？」最可能屬於哪個提問類型？",
+        options:["方案型","決策型","驗證型","原因型"], correct:2,
+        explain:"這句話在檢視實際結果與預期的落差，屬於驗證型提問，目的是產生學習。"},
+      {type:"mc", q:"問題價值公式是？",
+        options:["重要性＋確定性＋可行動性","重要性 × 確定性 × 可行動性","重要性－確定性＋可行動性","可行動性 ÷ 重要性"], correct:1,
+        explain:"三個因子是相乘關係——任一項趨近於零，整體問題價值也會趨近於零。"},
+      {type:"mc", q:"上游思維冰山問題中，「對方真正重視什麼？」屬於哪一層？",
+        options:["表層","中層","深層","以上皆非"], correct:2,
+        explain:"表層問想解決什麼事、中層問為什麼重要、深層才問到對方真正重視什麼。"},
+      {type:"mc", q:"「我應該問到多深？」對應八大元素中的哪一項？",
+        options:["時機","信任","情緒","後續"], correct:1,
+        explain:"這題直接對應「信任」元素：我應該問到多深，決定探索程度與界線。"},
+      {type:"open", q:"情境：你的團隊這個月業績下降了。請針對這個情境，分別寫一句「目標型」與「原因型」提問。",
+        ref:"目標型參考方向：「我們這個月原本想達成的目標具體是什麼？」原因型參考方向：「業績下降，我們認為最主要的原因是什麼？有證據支持嗎？」"}
+    ]
+  },
+  {
+    key:"ch4",
+    title:"如何問出好人緣",
+    eyebrow:"CHAPTER 4",
+    intro:"提問讓我有機會走進別人的世界，而理解讓彼此的世界產生連結。認識關係的五個方向、信任四層級，以及四種追問技巧。",
+    concept:`
+      <p><b>提問的關係（五個方向）：</b></p>
+      <table>
+        <tr><th>關係</th><th>提問重點</th><th>問題範例</th></tr>
+        <tr><td>向上提問</td><td>釐清目標、理解決策</td><td>這件事最重要的成功標準是什麼？</td></tr>
+        <tr><td>平行提問</td><td>協調資源、建立共識</td><td>我們雙方有哪些共同目標？</td></tr>
+        <tr><td>向下提問</td><td>發現障礙、培養自主性</td><td>你認為目前最大的困難是什麼？</td></tr>
+        <tr><td>對外提問</td><td>理解需求、協商合作</td><td>你最希望這次合作解決什麼？</td></tr>
+        <tr><td>自我提問</td><td>檢視假設、反思決策</td><td>我現在的判斷建立在什麼證據上？</td></tr>
+      </table>
+      <p style="margin-top:10px;"><b>提問的信任（四層級）：</b></p>
+      <table>
+        <tr><th>信任程度</th><th>關係狀態</th><th>適合的提問</th></tr>
+        <tr><td>L1 陌生</td><td>尚未建立信任</td><td>事實型、有趣型、搭橋型</td></tr>
+        <tr><td>L2 認識</td><td>可以基本交流</td><td>診斷型、任務型</td></tr>
+        <tr><td>L3 信任</td><td>願意分享想法</td><td>策略型、創意型、適度同理型</td></tr>
+        <tr><td>L4 深度信任</td><td>願意討論敏感議題</td><td>深度同理型、遺產型</td></tr>
+      </table>
+      <p style="margin-top:10px;"><b>提問關係位移：</b>看見 → 理解 → 信任 → 連結 → 共創</p>
+      <p><b>四種追問技巧：</b>關注型（延續對方剛說的內容）、好奇型（對差異保持開放而非評價）、尊重型（承接上一個答案而非突然跳問）、邀請型（分為「邀請分享」與「邀請參與」）。</p>
+    `,
+    questions:[
+      {type:"mc", q:"「我們之間是什麼關係？」屬於八大元素中的哪一項？",
+        options:["目的","對象","關係","信任"], correct:2,
+        explain:"這就是第三個元素「關係」，它會影響信任與權力動態。"},
+      {type:"mc", q:"在信任四層級中，「策略型、創意型、適度同理型」適合用在哪個階段？",
+        options:["L1 陌生","L2 認識","L3 信任","L4 深度信任"], correct:2,
+        explain:"L3 信任階段，對方願意分享想法，適合用策略型、創意型與適度同理型提問深入討論。"},
+      {type:"mc", q:"「你認為目前最大的困難是什麼？」屬於提問關係中哪一種方向？",
+        options:["向上提問","向下提問","對外提問","自我提問"], correct:1,
+        explain:"這句話重點在發現障礙、培養對方的自主性，屬於「向下提問」。"},
+      {type:"mc", q:"同事說「我最近工作真的很累」，下列哪個回應最符合「好奇型追問」？",
+        options:["辛苦了，好好休息。","你怎麼會累成這樣，是不是不夠努力？","是什麼事情讓你覺得特別累？","大家都很累啦。"], correct:2,
+        explain:"好奇型追問的核心不是多問，而是對對方的經驗保持開放與好奇，而非評價或比較。"},
+      {type:"mc", q:"提問關係位移的正確順序是？",
+        options:["理解→看見→信任→連結→共創","看見→理解→信任→連結→共創","看見→信任→理解→共創→連結","信任→看見→理解→連結→共創"], correct:1,
+        explain:"先被看見、再被理解，進而建立信任，產生連結，最後走向共創。"},
+      {type:"open", q:"同事說「我最近工作真的很累」，請分別用「尊重型追問」與「邀請型追問」各寫一句回應。",
+        ref:"尊重型參考方向：承接對方的話，例如「聽起來最近真的消耗很大，是什麼事情特別讓你覺得累？」邀請型參考方向（邀請分享）：「願意多說一點是哪部分讓你覺得特別累嗎？」或（邀請參與）：「如果需要幫忙分擔，你會希望我做哪一塊？」"}
+    ]
+  },
+  {
+    key:"ch5",
+    title:"如何通過提問進入新世界",
+    eyebrow:"CHAPTER 5",
+    intro:"世界上有一萬件值得你知道的事情，但你現在只知道其中一百件。認識未知的未知、周哈里窗，以及五種打開新世界的提問方式。",
+    concept:`
+      <p><b>周哈里窗回顧：</b>開放（雙方都知道）／盲目（對方知道，自己不知道）／隱藏（對方不知道，自己知道）／未知（雙方都不知道）。</p>
+      <p><b>提問如何打開新世界：</b></p>
+      <table>
+        <tr><th>新世界</th><th>探索內容</th><th>代表問題</th></tr>
+        <tr><td>知識的新世界</td><td>發現新的知識與方法</td><td>還有哪些我不知道的學科與工具？</td></tr>
+        <tr><td>觀點的新世界</td><td>從不同角度理解事物</td><td>如果我是另一個立場的人，會怎麼看？</td></tr>
+        <tr><td>可能性的新世界</td><td>突破原本的限制</td><td>如果不照現在的方法呢？</td></tr>
+        <tr><td>經驗的新世界</td><td>走進陌生環境並親自體驗</td><td>我可以嘗試什麼從未做過的事？</td></tr>
+      </table>
+      <p style="margin-top:10px;"><b>五種突破邊界的提問：</b></p>
+      <ul>
+        <li><b>跨界問：</b>例如翠鳥鳥喙形狀的日本新幹線列車設計——從完全不同的領域找靈感。</li>
+        <li><b>反轉問：</b>「如果我們一直相信的事情，其實不是必要條件呢？」</li>
+        <li><b>極限問：</b>「如果資源只有現在的十分之一，我們會怎麼做？」</li>
+        <li><b>未知問：</b>馬斯克：「知道哪些事情後，會使我改變決定？」</li>
+        <li><b>體驗問：</b>「我要做什麼，才能真正理解這個世界？」</li>
+      </ul>
+      <p><b>見自己 / 見天地 / 見眾生：</b></p>
+      <ul>
+        <li><b>見自己（認識自我）：</b>看清自己的優點、缺點、欲望、本心與局限，體會「你只能成為你自己」，由迷惘轉為坦然與安定。</li>
+        <li><b>見天地（看見世界的規律）：</b>跳出個人的小圈子，看見宇宙的浩瀚、自然的規律與自身的渺小，心胸變得開闊、懂得謙卑順應自然。</li>
+        <li><b>見眾生（同理眾生與慈悲）：</b>在看清自己與世界後，體會到人世間的苦樂與身不由己，以柔軟、寬容和悲憫的心去對待他人與世界。</li>
+      </ul>
+    `,
+    questions:[
+      {type:"mc", q:"周哈里窗中「對方不知道，自己知道」屬於？",
+        options:["開放","盲目","隱藏","未知"], correct:2,
+        explain:"自己知道而對方不知道的部分，是「隱藏」區，需要主動分享才能讓對方看見。"},
+      {type:"mc", q:"馬斯克的「知道哪些事情後，會使我改變決定？」屬於哪一種提問？",
+        options:["跨界問","反轉問","極限問","未知問"], correct:3,
+        explain:"這句話在探索「未知的未知」——那些還沒被意識到、但可能改變決策的資訊，屬於未知問。"},
+      {type:"mc", q:"「如果資源只有現在的十分之一，我們會怎麼做？」屬於？",
+        options:["反轉問","極限問","體驗問","跨界問"], correct:1,
+        explain:"這是用極端情境逼出創意，屬於極限問。"},
+      {type:"mc", q:"「如果我們一直相信的事情，其實不是必要條件呢？」屬於？",
+        options:["反轉問","極限問","跨界問","體驗問"], correct:0,
+        explain:"這句話在挑戰既有假設，屬於反轉問。"},
+      {type:"mc", q:"日本新幹線借用翠鳥鳥喙形狀設計車頭，展現的是哪一種提問帶來的創新？",
+        options:["極限問","體驗問","跨界問","反轉問"], correct:2,
+        explain:"從完全不同的領域（生物學／空氣動力學）借用靈感，是典型的跨界問。"},
+      {type:"mc", q:"「見天地」所描述的狀態是？",
+        options:["由迷惘轉為坦然安定","心胸開闊、懂得謙卑順應自然","以柔軟寬容悲憫對待他人","以上皆非"], correct:1,
+        explain:"見天地指跳出個人小圈子後，心胸變得開闊，懂得謙卑順應自然。"},
+      {type:"open", q:"針對你目前卡住的一件事，試著寫一句「跨界問」或「反轉問」。",
+        ref:"跨界問參考方向：這個問題，在完全不同的領域（例如餐飲業、電玩設計、生態系統）會怎麼被解決？反轉問參考方向：我們一直認定不可或缺的那個條件，拿掉之後真的不行嗎？"}
+    ]
+  },
+  {
+    key:"ch6",
+    title:"提問改變工作、家庭、人生",
+    eyebrow:"CHAPTER 6",
+    intro:"知道答案，不代表事情會改變。回到 Q-A-E 三角，把提問延伸到工作、家庭、人生三個需要持續提問的世界。",
+    concept:`
+      <p><b>Q-A-E 三角：</b>提問（Q）／行動（E）／答案（A），三者構成持續進化的核心框架。</p>
+      <p><b>人有三個需要持續提問的世界：</b></p>
+      <table>
+        <tr><th>領域</th><th>真正需要探索的事情</th><th>核心提問</th></tr>
+        <tr><td>工作</td><td>如何創造更大的價值？</td><td>我在解決真正重要的問題嗎？</td></tr>
+        <tr><td>家庭</td><td>如何建立更好的關係？</td><td>我真正理解重要的人需要什麼嗎？</td></tr>
+        <tr><td>人生</td><td>如何成為自己想成為的人？</td><td>我在過自己真正想要的生活嗎？</td></tr>
+      </table>
+      <p style="margin-top:10px;"><b>結尾金句：</b>發現不知道的事。重新理解已知道的事。創造還沒發生的事。</p>
+    `,
+    questions:[
+      {type:"mc", q:"Q-A-E 三角中，Q、A、E 分別代表？",
+        options:["問題、行動、答案","提問、答案、行動","品質、分析、執行","目標、策略、評估"], correct:1,
+        explain:"Q = 提問、A = 答案、E = 行動，三者構成課程的核心框架。"},
+      {type:"mc", q:"在「人有三個需要持續提問的世界」中，家庭領域的核心提問是？",
+        options:["我在解決真正重要的問題嗎？","我真正理解重要的人需要什麼嗎？","我在過自己真正想要的生活嗎？","以上皆非"], correct:1,
+        explain:"家庭領域真正需要探索的是「如何建立更好的關係」，核心提問正是「我真正理解重要的人需要什麼嗎？」"},
+      {type:"mc", q:"結尾金句「發現不知道的事」之後接著的兩句是？",
+        options:["重新理解已知道的事、創造還沒發生的事","創造還沒發生的事、重新理解已知道的事","學會放下的事、接受改變的事","以上皆非"], correct:0,
+        explain:"完整金句：發現不知道的事。重新理解已知道的事。創造還沒發生的事。"},
+      {type:"open", q:"總結練習：請針對工作、家庭、人生三個領域，各寫一個你這週真正想問自己或對方的問題。",
+        ref:"自我檢查：這三個問題是否分別對應「創造價值 / 建立關係 / 成為自己想成為的人」？寫完之後，別忘了回到 Q-A-E 三角——問完之後，你打算採取的下一步行動是什麼？"}
+    ]
+  }
+];
+
+/* ===================== 狀態管理 ===================== */
+const STORAGE_KEY = "ajin_quiz_state_v1";
+let state = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  const s = {};
+  chapters.forEach(ch=>{
+    s[ch.key] = ch.questions.map(()=>({answered:false, selected:null, openText:"", revealed:false}));
+  });
+  return s;
+}
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let currentChapter = chapters[0].key;
+
+/* ===================== 渲染 ===================== */
+function chapterScore(ch){
+  const qs = ch.questions;
+  const st = state[ch.key];
+  let correct=0, total=0;
+  qs.forEach((q,i)=>{
+    if(q.type==="mc" || q.type==="tf"){
+      total++;
+      if(st[i].answered && isCorrect(q, st[i])) correct++;
+    }
+  });
+  return {correct, total};
+}
+
+function isCorrect(q, s){
+  if(q.type==="mc") return s.selected === q.correct;
+  if(q.type==="tf") return s.selected === q.correct;
+  return false;
+}
+
+function renderSidebar(){
+  const nav = document.getElementById("navList");
+  nav.innerHTML = "";
+  let totalCorrect=0, totalAll=0;
+  chapters.forEach(ch=>{
+    const {correct,total} = chapterScore(ch);
+    totalCorrect += correct; totalAll += total;
+    const item = document.createElement("div");
+    item.className = "nav-item" + (ch.key===currentChapter ? " active" : "");
+    item.innerHTML = `<span>${ch.eyebrow.replace("CHAPTER ","Ch.")}　${ch.title}</span><span class="score-pill">${correct}/${total}</span>`;
+    item.onclick = ()=>{ currentChapter = ch.key; render(); window.scrollTo(0,0); };
+    nav.appendChild(item);
+  });
+  document.getElementById("overallScore").textContent = `${totalCorrect} / ${totalAll}`;
+}
+
+function renderMain(){
+  const ch = chapters.find(c=>c.key===currentChapter);
+  const main = document.getElementById("main");
+  main.innerHTML = "";
+
+  const header = document.createElement("div");
+  header.className = "chapter-header";
+  header.innerHTML = `
+    <div class="chapter-eyebrow">${ch.eyebrow}</div>
+    <h2>${ch.title}</h2>
+    <p>${ch.intro}</p>
+  `;
+  main.appendChild(header);
+
+  const concept = document.createElement("div");
+  concept.className = "concept-box";
+  concept.innerHTML = ch.concept;
+  main.appendChild(concept);
+
+  ch.questions.forEach((q,i)=>{
+    main.appendChild(renderQuestion(ch, q, i));
+  });
+
+  const footer = document.createElement("div");
+  footer.className = "chapter-nav-footer";
+  const idx = chapters.findIndex(c=>c.key===ch.key);
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "btn secondary";
+  prevBtn.textContent = "← 上一章";
+  prevBtn.disabled = idx===0;
+  prevBtn.onclick = ()=>{ currentChapter = chapters[idx-1].key; render(); window.scrollTo(0,0); };
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "btn";
+  nextBtn.textContent = "下一章 →";
+  nextBtn.disabled = idx===chapters.length-1;
+  nextBtn.onclick = ()=>{ currentChapter = chapters[idx+1].key; render(); window.scrollTo(0,0); };
+  footer.appendChild(prevBtn);
+  footer.appendChild(nextBtn);
+  main.appendChild(footer);
+}
+
+function renderQuestion(ch, q, i){
+  const st = state[ch.key][i];
+  const card = document.createElement("div");
+  card.className = "qcard";
+
+  const metaLabel = q.type==="open" ? "開放練習題・自我檢核" : "選擇題";
+  card.innerHTML = `<div class="qmeta">第 ${i+1} 題・${metaLabel}</div><div class="qtext">${q.q}</div>`;
+
+  if(q.type==="mc" || q.type==="tf"){
+    const opts = q.type==="tf" ? ["對","錯"] : q.options;
+    const optWrap = document.createElement("div");
+    optWrap.className = "options";
+
+    opts.forEach((optText, oi)=>{
+      const optVal = q.type==="tf" ? (oi===0) : oi;
+      const label = document.createElement("label");
+      label.className = "option" + (st.answered ? " disabled" : "");
+      const inputId = `${ch.key}_${i}_${oi}`;
+      label.innerHTML = `<input type="radio" name="${ch.key}_${i}" id="${inputId}" ${st.answered?"disabled":""} ${st.selected===optVal?"checked":""}> <span>${optText}</span>`;
+      label.querySelector("input").addEventListener("change", ()=>{ st.selected = optVal; });
+
+      if(st.answered){
+        const correctVal = q.correct;
+        if(optVal===correctVal) label.classList.add("correct");
+        else if(optVal===st.selected) label.classList.add("wrong");
+      }
+      optWrap.appendChild(label);
+    });
+    card.appendChild(optWrap);
+
+    const row = document.createElement("div");
+    row.className = "row-actions";
+    const submitBtn = document.createElement("button");
+    submitBtn.className = "btn";
+    submitBtn.textContent = "提交答案";
+    submitBtn.disabled = st.answered;
+    submitBtn.onclick = ()=>{
+      if(st.selected===null || st.selected===undefined){
+        alert("請先選擇一個答案");
+        return;
+      }
+      st.answered = true;
+      saveState();
+      render();
+    };
+    row.appendChild(submitBtn);
+
+    if(st.answered){
+      const resetBtn = document.createElement("button");
+      resetBtn.className = "btn secondary";
+      resetBtn.textContent = "重新作答";
+      resetBtn.onclick = ()=>{
+        st.answered = false; st.selected = null;
+        saveState(); render();
+      };
+      row.appendChild(resetBtn);
+    }
+    card.appendChild(row);
+
+    const fb = document.createElement("div");
+    fb.className = "feedback " + (st.answered ? "show " : "") + (st.answered && isCorrect(q,st) ? "good":"bad");
+    if(st.answered){
+      fb.innerHTML = (isCorrect(q,st) ? "✅ 答對了！　" : "❌ 答錯了。　") + q.explain;
+    }
+    card.appendChild(fb);
+
+  } else if(q.type==="open"){
+    const ta = document.createElement("textarea");
+    ta.placeholder = "在這裡寫下你的練習...";
+    ta.value = st.openText || "";
+    ta.oninput = ()=>{ st.openText = ta.value; saveState(); };
+    card.appendChild(ta);
+
+    const row = document.createElement("div");
+    row.className = "row-actions";
+    const revealBtn = document.createElement("button");
+    revealBtn.className = "btn secondary";
+    revealBtn.textContent = st.revealed ? "隱藏參考方向" : "查看參考方向";
+    revealBtn.onclick = ()=>{
+      st.revealed = !st.revealed;
+      saveState(); render();
+    };
+    row.appendChild(revealBtn);
+    card.appendChild(row);
+
+    const ref = document.createElement("div");
+    ref.className = "ref-answer" + (st.revealed ? " show" : "");
+    ref.innerHTML = "<b>參考方向（非標準答案）：</b>" + q.ref;
+    card.appendChild(ref);
+  }
+
+  return card;
+}
+
+function render(){
+  renderSidebar();
+  renderMain();
+}
+
+document.getElementById("resetAllBtn").onclick = ()=>{
+  if(confirm("確定要清除所有作答紀錄嗎？這個動作無法復原。")){
+    localStorage.removeItem(STORAGE_KEY);
+    state = loadState();
+    render();
+  }
+};
+
+render();
+</script>
+</body>
+</html>
