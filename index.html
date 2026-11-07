@@ -30,6 +30,16 @@
     background:var(--bg);
     color:var(--ink);
   }
+  #appLayout{
+    display:flex;
+    min-height:100vh;
+  }
+  #mainCol{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+  }
   #heroBanner{
     width:100%;
     line-height:0;
@@ -39,14 +49,10 @@
   #heroBanner img{
     width:100%;
     height:auto;
-    max-height:340px;
+    max-height:260px;
     object-fit:cover;
     object-position:center 30%;
     display:block;
-  }
-  #appLayout{
-    display:flex;
-    min-height:calc(100vh - 0px);
   }
   /* Sidebar */
   #sidebar{
@@ -304,10 +310,6 @@
 </head>
 <body>
 
-<div id="heroBanner">
-  <img src="banner.webp" alt="提問課・THE POWER OF QUESTIONS・工作優化指南">
-</div>
-
 <div id="appLayout">
 <div id="sidebar">
   <div class="brand-kicker">KIM・阿金！人生進化中</div>
@@ -324,7 +326,12 @@
   <button id="resetAllBtn">重設全部作答紀錄</button>
 </div>
 
-<div id="main"></div>
+<div id="mainCol">
+  <div id="heroBanner">
+    <img src="banner.webp" alt="提問課・THE POWER OF QUESTIONS・工作優化指南">
+  </div>
+  <div id="main"></div>
+</div>
 </div>
 
 <script>
