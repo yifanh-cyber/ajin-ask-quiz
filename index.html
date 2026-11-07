@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>阿金提問力｜互動式系統練習</title>
+<title>提問課｜工作優化指南・互動式系統練習</title>
 <style>
   :root{
-    --bg:#f0f3f5;
+    --bg:#f5f1ea;
     --card:#ffffff;
-    --ink:#1d1d1d;
-    --sub:#5c6773;
-    --accent:#2f54eb;
-    --accent-dark:#1939b7;
-    --accent-bg:#eef1fd;
+    --ink:#201c18;
+    --sub:#6b6560;
+    --accent:#c2793c;
+    --accent-dark:#96581f;
+    --accent-bg:#faf1e4;
     --good:#2e7d4f;
     --good-bg:#e7f5ec;
     --bad:#c0392b;
     --bad-bg:#fdecea;
-    --line:#e2e6ea;
+    --line:#e8e1d6;
   }
   *{box-sizing:border-box;}
   body{
@@ -30,28 +30,57 @@
   }
   /* Sidebar */
   #sidebar{
-    width:230px;
+    width:250px;
     flex-shrink:0;
-    background:#ffffff;
-    color:var(--ink);
-    padding:24px 16px;
+    background:
+      radial-gradient(120% 90% at 100% 0%, rgba(194,121,60,.22), transparent 60%),
+      radial-gradient(120% 70% at 0% 100%, rgba(194,121,60,.12), transparent 55%),
+      linear-gradient(160deg,#171310,#0f0c0a 70%);
+    color:#efe8dd;
+    padding:28px 18px 24px;
     position:sticky;
     top:0;
     height:100vh;
     overflow-y:auto;
-    border-right:1px solid var(--line);
+  }
+  .brand-kicker{
+    font-size:10.5px;
+    letter-spacing:3px;
+    color:#a9754a;
+    font-weight:700;
+    margin-bottom:14px;
   }
   #sidebar h1{
-    font-size:17px;
-    line-height:1.5;
-    margin:0 0 4px;
-    color:var(--accent);
+    font-size:34px;
+    line-height:1.15;
+    margin:0 0 6px;
+    color:#fbf6ef;
     font-weight:800;
+    letter-spacing:2px;
+    text-shadow:0 1px 0 rgba(255,255,255,.15), 0 2px 10px rgba(194,121,60,.35);
+  }
+  .brand-en{
+    font-size:10px;
+    letter-spacing:3.5px;
+    color:#c2793c;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .brand-sub{
+    font-size:12px;
+    color:#bdb2a2;
+    margin-bottom:14px;
+  }
+  #sidebar hr{
+    border:none;
+    border-top:1px solid rgba(255,255,255,.14);
+    margin:14px 0;
   }
   #sidebar .tagline{
     font-size:12px;
-    color:var(--sub);
-    margin-bottom:24px;
+    color:#d8b48a;
+    line-height:1.8;
+    margin-bottom:22px;
   }
   .nav-item{
     display:flex;
@@ -62,15 +91,15 @@
     margin-bottom:6px;
     cursor:pointer;
     font-size:13.5px;
-    color:#3c4450;
+    color:#d9d0c3;
     transition:background .15s;
   }
-  .nav-item:hover{ background:var(--accent-bg); }
+  .nav-item:hover{ background:rgba(255,255,255,.06); }
   .nav-item.active{ background:var(--accent); color:#fff; font-weight:600; }
   .nav-item .score-pill{
     font-size:11px;
-    background:#eef1f5;
-    color:#5c6773;
+    background:rgba(255,255,255,.08);
+    color:#d9d0c3;
     padding:2px 7px;
     border-radius:20px;
   }
@@ -78,14 +107,15 @@
   #overall{
     margin-top:20px;
     padding:14px;
-    background:var(--accent-bg);
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.1);
     border-radius:10px;
     font-size:12.5px;
-    color:#3c4450;
+    color:#d9d0c3;
   }
   #overall .num{
     font-size:22px;
-    color:var(--accent);
+    color:#eab676;
     font-weight:700;
   }
   #resetAllBtn{
@@ -93,13 +123,13 @@
     width:100%;
     padding:8px;
     background:transparent;
-    border:1px solid var(--line);
-    color:var(--sub);
+    border:1px solid rgba(255,255,255,.18);
+    color:#bdb2a2;
     border-radius:8px;
     font-size:12px;
     cursor:pointer;
   }
-  #resetAllBtn:hover{ border-color:var(--accent); color:var(--accent); }
+  #resetAllBtn:hover{ border-color:var(--accent); color:#eab676; }
 
   /* Main */
   #main{
@@ -131,18 +161,18 @@
   }
   .concept-box{
     background:var(--accent-bg);
-    border:1px solid #d7e0fa;
+    border:1px solid #ecdcc3;
     border-radius:10px;
     padding:16px 20px;
     margin-bottom:28px;
     font-size:13.5px;
     line-height:1.9;
-    color:#374151;
+    color:#4a4238;
   }
   .concept-box b{ color:var(--accent-dark); }
   .concept-box table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px;}
-  .concept-box td, .concept-box th{ border:1px solid #d7e0fa; padding:6px 8px; text-align:left; }
-  .concept-box th{ background:#dfe6fb; }
+  .concept-box td, .concept-box th{ border:1px solid #ecdcc3; padding:6px 8px; text-align:left; }
+  .concept-box th{ background:#f3e6d2; }
 
   .qcard{
     background:var(--card);
@@ -201,7 +231,7 @@
     border:1px solid var(--accent);
   }
   .btn.secondary:hover{ background:var(--accent-bg); }
-  .btn:disabled{ background:#c7d0e8; cursor:default; }
+  .btn:disabled{ background:#e3d4bf; cursor:default; }
 
   .feedback{
     margin-top:12px;
@@ -254,8 +284,12 @@
 <body>
 
 <div id="sidebar">
-  <h1>阿金提問力</h1>
-  <div class="tagline">系統練習手冊・互動版</div>
+  <div class="brand-kicker">KIM・阿金！人生進化中</div>
+  <h1>提問課</h1>
+  <div class="brand-en">THE POWER OF QUESTIONS</div>
+  <div class="brand-sub">工作優化指南・互動式系統練習</div>
+  <hr>
+  <div class="tagline">重複的提問會讓你困在原地，<br>好的提問會帶你前進。</div>
   <div id="navList"></div>
   <div id="overall">
     <div>目前總得分</div>
